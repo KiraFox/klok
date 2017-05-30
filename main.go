@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"time"
 )
 
-var loc = fmt.Sprintf("%s/.local/share/klok/timesheet.txt", os.Getenv("HOME"))
+var dir = fmt.Sprintf("%s/.local/share/klok", os.Getenv("HOME"))
 
 func main() {
 	command := os.Args[1]
@@ -29,8 +30,11 @@ func main() {
 
 func logTime(key string) {
 	t := time.Now()
+	yr, wk := t.ISOWeek()
+	filename := fmt.Sprintf("%d-wk%d.txt", yr, wk)
+	fullPath := path.Join(dir, filename)
 
-	file, err := os.OpenFile(loc, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	file, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	checkError(err)
 	defer file.Close()
 
