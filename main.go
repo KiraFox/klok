@@ -34,6 +34,9 @@ func logTime(key string) {
 	filename := fmt.Sprintf("%d-wk%d.txt", yr, wk)
 	fullPath := path.Join(dir, filename)
 
+	err := os.MkdirAll(dir, 0755)
+	checkError(err)
+
 	file, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	checkError(err)
 	defer file.Close()
