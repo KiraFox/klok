@@ -22,7 +22,7 @@ func main() {
 	case "out":
 		logTime("out")
 	case "today":
-		fmt.Println("got today")
+		today()
 	case "week":
 		week()
 	default:
@@ -49,7 +49,40 @@ func logTime(key string) {
 	checkError(err)
 }
 
+func today() {
+	t := time.Now()
+	today := t.Weekday()
+
+	_, dayTotal, err := scanFile()
+	checkError(err)
+
+	for i := 0; i < len(dayTotal); i++ {
+		if i != int(today) {
+			continue
+		} else {
+			fmt.Println("Total time today so far: ", dayTotal[i].String())
+		}
+	}
+
+}
+
 func week() {
+	totalTime, dayTotal, err := scanFile()
+	checkError(err)
+
+	for i := 0; i < 7; i++ {
+		weekday := time.Weekday(i)
+		total := dayTotal[i]
+
+		if dayTotal[i] > 0 {
+			fmt.Println(weekday, total)
+		}
+	}
+
+	fmt.Println("Total time this week so far: ", totalTime.String())
+}
+
+func scanFile() (totalTime time.Duration, dayTotal [7]time.Duration, err error) {
 	t := time.Now()
 
 	file, err := os.Open(fullPath(t))
@@ -60,8 +93,6 @@ func week() {
 
 	var in []time.Time
 	var out []time.Time
-	var timeDiff []time.Duration
-	var totalTime time.Duration
 
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -76,18 +107,17 @@ func week() {
 	}
 
 	for i := 0; i < len(out); i++ {
-		timeDiff = append(timeDiff, (out[i].Sub(in[i])))
-	}
-
-	for _, x := range timeDiff {
-		totalTime += x
+		diff := out[i].Sub(in[i])
+		totalTime += diff
+		dayTotal[in[i].Weekday()] += diff
 	}
 
 	if len(in) > len(out) {
-		totalTime += t.Sub(in[len(in)-1])
+		diff := t.Sub(in[len(in)-1])
+		totalTime += diff
+		dayTotal[in[len(in)-1].Weekday()] += diff
 	}
-
-	fmt.Println("Total time this week so far: ", totalTime.String())
+	return
 }
 
 func fullPath(t time.Time) string {
