@@ -7,11 +7,12 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 )
 
-var dir = fmt.Sprintf("%s/.local/share/klok", os.Getenv("HOME"))
+var dir = getDir()
 
 func main() {
 	command := os.Args[1]
@@ -28,6 +29,16 @@ func main() {
 	default:
 		fmt.Println("What?")
 	}
+}
+
+func getDir() (dir string) {
+	if runtime.GOOS == "windows" {
+		dir = path.Join(os.Getenv("LOCALAPPDATA"), "klok")
+	} else {
+		dir = path.Join(os.Getenv("HOME"), ".local", "share", "klok")
+	}
+
+	return dir
 }
 
 func logTime(key, opp string) {
