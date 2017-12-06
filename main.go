@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 	"runtime"
 	"strings"
@@ -26,6 +27,8 @@ func main() {
 		today()
 	case "week":
 		week()
+	case "edit":
+		edit()
 	default:
 		fmt.Println("What?")
 	}
@@ -153,6 +156,40 @@ func scanFile() (totalTime time.Duration, dayTotal [7]time.Duration, err error) 
 		dayTotal[in[len(in)-1].Weekday()] += diff
 	}
 	return
+}
+
+func edit() {
+	path := fullPath(time.Now())
+
+	editor, ok := os.LookupEnv("EDITOR")
+
+	if !ok {
+		switch runtime.GOOS {
+		case "windows":
+			cmd := exec.Command(
+				"rundll32.exe",
+				"url.dll,FileProtocolHandler",
+				path,
+			)
+			checkError(cmd.Start())
+			return
+		case "darwin":
+			cmd := exec.Command("open", path)
+			checkError(cmd.Start())
+			return
+		case "linux":
+			editor = "nano"
+		default:
+			fmt.Println("Please set an EDITOR environment variable.")
+			return
+		}
+	}
+
+	cmd := exec.Command(editor, path)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	checkError(cmd.Run())
 }
 
 func fullPath(t time.Time) string {
