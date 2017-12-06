@@ -18,9 +18,9 @@ func main() {
 
 	switch command {
 	case "in":
-		logTime("in")
+		logTime("in", "out")
 	case "out":
-		logTime("out")
+		logTime("out", "in")
 	case "today":
 		today()
 	case "week":
@@ -30,15 +30,17 @@ func main() {
 	}
 }
 
-func logTime(key string) {
+func logTime(key, opp string) {
 	t := time.Now()
 
 	err := os.MkdirAll(dir, 0755)
 	checkError(err)
 
-	file, err := os.OpenFile(fullPath(t), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	file, err := os.OpenFile(fullPath(t), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	checkError(err)
 	defer file.Close()
+
+	checkError(checkLog(key, opp, file))
 
 	writer := bufio.NewWriter(file)
 
@@ -47,6 +49,26 @@ func logTime(key string) {
 
 	err = writer.Flush()
 	checkError(err)
+}
+
+func checkLog(key, opp string, file *os.File) (err error) {
+	scanner := bufio.NewScanner(file)
+
+	var text string
+
+	for scanner.Scan() {
+		text = scanner.Text()
+	}
+
+	checkError(scanner.Err())
+
+	if strings.Contains(text, key) {
+		err = errors.New("Please klok " + opp + " before kloking " + key)
+		return err
+	}
+
+	return nil
+
 }
 
 func today() {
@@ -105,6 +127,8 @@ func scanFile() (totalTime time.Duration, dayTotal [7]time.Duration, err error) 
 			out = append(out, currTime)
 		}
 	}
+
+	checkError(scanner.Err())
 
 	for i := 0; i < len(out); i++ {
 		diff := out[i].Sub(in[i])
