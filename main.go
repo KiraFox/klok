@@ -16,21 +16,26 @@ import (
 var dir = getDir()
 
 func main() {
-	command := os.Args[1]
 
-	switch command {
-	case "in":
-		logTime("in", "out")
-	case "out":
-		logTime("out", "in")
-	case "today":
-		today()
-	case "week":
-		week()
-	case "edit":
-		edit()
-	default:
-		fmt.Println("What?")
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+
+		switch command {
+		case "in":
+			logTime("in", "out")
+		case "out":
+			logTime("out", "in")
+		case "today":
+			today()
+		case "week":
+			week()
+		case "edit":
+			edit()
+		default:
+			fmt.Println("Please enter a valid command.")
+		}
+	} else {
+		fmt.Println("Please enter a valid command when running klok.")
 	}
 }
 
